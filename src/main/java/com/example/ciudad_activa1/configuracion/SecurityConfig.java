@@ -27,22 +27,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Requerido para APIs REST
+                .csrf(csrf -> csrf.disable()) // Desactivar protección CSRF
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // 1. Rutas públicas
-                        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                        // PERMITIR TODO SIN RESTRICCIÓN DE ROLES NI TOKENS
+                        .anyRequest().permitAll()
+                );
 
-                        // 2. Permitir GET y POST de reportes para evitar el 403
-                        .requestMatchers(HttpMethod.GET, "/api/reportes/**", "/api/categorias/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/reportes/**", "/api/evidencias/**").permitAll()
-
-                        // Cualquier otra ruta requerirá autenticación
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        // COMENTA O ELIMINA ESTA LÍNEA TEMPORALMENTE PARA QUE NO FILTRE NADA:
+        // .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
