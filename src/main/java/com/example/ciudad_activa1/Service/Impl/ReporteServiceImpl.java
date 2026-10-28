@@ -1,6 +1,7 @@
 package com.example.ciudad_activa1.Service.Impl;
 
 import com.example.ciudad_activa1.DTO.Request.AsignacionRequestDTO;
+import com.example.ciudad_activa1.DTO.Request.ReporteRequestDTO;
 import com.example.ciudad_activa1.DTO.Request.ValidarReporteRequestDTO;
 import com.example.ciudad_activa1.DTO.Response.ReporteResponseDTO;
 import com.example.ciudad_activa1.Entity.CategoriaIncidencia;
@@ -34,22 +35,23 @@ public class ReporteServiceImpl implements ReporteService {
     private CategoriaIncidenciaRepository categoriaIncidenciaRepository;
 
     @Override
-    public Reporte registrarReporte(ReporteResponseDTO dto) {
-        Usuario ciudadano = usuarioRepository.findById(dto.getCiudadanoId())
-                .orElseThrow(() -> new ResourceNotFoundException("Ciudadano no encontrado con ID: " + dto.getCiudadanoId()));
-
-        CategoriaIncidencia categoria = categoriaIncidenciaRepository.findById(dto.getCategoriaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + dto.getCategoriaId()));
-
+    public Reporte registrarReporte(ReporteRequestDTO dto) {
         Reporte reporte = new Reporte();
         reporte.setTitulo(dto.getTitulo());
         reporte.setDescripcion(dto.getDescripcion());
         reporte.setUbicacion(dto.getUbicacion());
         reporte.setImagen(dto.getImagen());
-        reporte.setPrioridad(dto.getPrioridad() != null ? dto.getPrioridad() : "MEDIA");
-        reporte.setEstado("PENDIENTE");
-        reporte.setCiudadano(ciudadano);
-        reporte.setCategoriaIncidencia(categoria);
+        reporte.setPrioridad(dto.getPrioridad());
+
+        // Buscar la entidad Ciudadano por ID si aplica
+        if (dto.getCiudadanoId() != null) {
+            // usuarioRepository.findById(dto.getCiudadanoId()).ifPresent(reporte::setCiudadano);
+        }
+
+        // Buscar la entidad Categoria por ID si aplica
+        if (dto.getCategoriaId() != null) {
+            // categoriaRepository.findById(dto.getCategoriaId()).ifPresent(reporte::setCategoria);
+        }
 
         return reporteRepository.save(reporte);
     }

@@ -1,8 +1,8 @@
 package com.example.ciudad_activa1.Controller;
 
 import com.example.ciudad_activa1.DTO.Request.AsignacionRequestDTO;
+import com.example.ciudad_activa1.DTO.Request.ReporteRequestDTO; // <-- Asegúrate de importar el DTO de Request
 import com.example.ciudad_activa1.DTO.Request.ValidarReporteRequestDTO;
-import com.example.ciudad_activa1.DTO.Response.ReporteResponseDTO;
 import com.example.ciudad_activa1.Entity.Reporte;
 import com.example.ciudad_activa1.Service.ReporteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +14,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/reportes")
-
 public class ReporteController {
 
     @Autowired
     private ReporteService reporteService;
 
+    // CORREGIDO: Cambiado de ReporteResponseDTO a ReporteRequestDTO
     @PostMapping
-    public ResponseEntity<Reporte> registrarReporte(@RequestBody ReporteResponseDTO dto){
+    public ResponseEntity<Reporte> registrarReporte(@RequestBody ReporteRequestDTO dto){
         Reporte nuevoReporte = reporteService.registrarReporte(dto);
         return new ResponseEntity<>(nuevoReporte, HttpStatus.CREATED);
     }
@@ -67,10 +67,10 @@ public class ReporteController {
         Reporte reporteActualizado = reporteService.actualizarReporte(id, reporteDetalles);
         return ResponseEntity.ok(reporteActualizado);
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<Reporte> obtenerReportePorId(@PathVariable Long id) {
         Reporte reporte = reporteService.buscarPorId(id);
         return ResponseEntity.ok(reporte);
     }
-
 }
