@@ -27,23 +27,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        // 1. Rutas de autenticación y documentación completamente públicas
-                        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-
-                        // 2. Permitir lecturas GET públicas a la API para eliminar el Error 403 de las listas/bandejas
-                        .requestMatchers(HttpMethod.GET, "/api/reportes/**", "/api/categorias/**", "/api/estadisticas/**", "/api/usuarios/**").permitAll()
-
-                        // 3. Permitir crear reportes y subir evidencias
-                        .requestMatchers(HttpMethod.POST, "/api/reportes/**", "/api/evidencias/**", "/api/comentarios/**").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "/api/reportes/**").permitAll()
-
-                        // Cualquier otra ruta requerirá autenticación estricta
-                        .anyRequest().authenticated()
-                )
+                .csrf(csrf -> csrf.disable()) // Requerido para APIs REST
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authorizeHttpRequests(auth -> auth
+                        // 1. Rutas públicas
+                        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+
+                        // 2. Permitir GET y POST de reportes para evitar el 403
+                        .requestMatchers(HttpMethod.GET, "/api/reportes/**", "/api/categorias/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/reportes/**", "/api/evidencias/**").permitAll()
+
+                        // Cualquier otra ruta requerirá autenticación
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
