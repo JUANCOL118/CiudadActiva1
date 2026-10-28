@@ -26,6 +26,15 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+        // Omitir la validación estricta de token para rutas públicas y Swagger
+        return path.startsWith("/api/auth/") ||
+                path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
@@ -34,8 +43,17 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             String username = null;
 
             if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
-                jwt = headerAuth.substring(7);
-                username = jwtUtils.getUserNameFromJwtToken(jwt);
+                jwt = headerAuth.substring(7).trim();
+
+                // Limpiar comillas iniciales y finales en Java puro
+                if (jwt.startsWith("\"") && jwt.endsWith("\"") && jwt.length() >= 2) {
+                    jwt = jwt.substring(1, jwt.length() - 1);
+                }
+
+                // En Java, para verificar que no esté vacío se usa !isEmpty() y !trim().isEmpty()
+                if (!jwt.trim().isEmpty()) {
+                    username = jwtUtils.getUserNameFromJwtToken(jwt);
+                }
             }
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -51,6 +69,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             logger.error("No se pudo establecer la autenticación del usuario en el contexto", e);
         }
 
+        // Siempre permite continuar la cadena de filtros para dejar actuar a las reglas .permitAll() de SecurityConfig
         filterChain.doFilter(request, response);
     }
 }
